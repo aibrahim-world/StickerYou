@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      SA_PASSWORD: "StickerYou@Password"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    networks:
+      - customers-network
+
+  customersapi:
+    image: customersapi:latest
+    build:
+      context: .
+      dockerfile: Customers.Api/Dockerfile
+    container_name: customersapi
+    depends_on:
+      - sqlserver
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=CustomersDb;User=sa;Password=StickerYou@Password;TrustServerCertificate=True"
+    ports:
+      - "5000:8080"
+    networks:
+      - customers-network
+
+networks:
+  customers-network:
+    driver: bridge
